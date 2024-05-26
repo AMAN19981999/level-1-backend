@@ -1,6 +1,8 @@
 import mongoose, { Schema } from "mongoose";
-import JsonWebToken from "jsonwebtoken";
+import "dotenv/config";
+
 import bcrypt from "bcrypt";
+import { JsonWebToken } from "jsonwebtoken";
 
 const userSchema = new Schema(
   {
@@ -70,4 +72,31 @@ userSchema.methods.isPasswordCorrect = async function (password) {
   return await bcrypt.compare(password, this.password);
 };
 
-export const User = mongoose.model("User", userSchema); 
+userSchema.methods.generateAccestoken = function () {
+  return JsonWebToken.sign(
+    {
+      id: this._id,
+      email: this.email,
+      userName: this.username,
+      fullname: this.fullname,
+    },
+
+    process.env.ACCESS_TOKEN_SECRET,
+    {
+      expiresIn: process.env.ACCESS_TOKEN_EXPIRY,
+    }
+  );
+};
+userSchema.methods.generateRefreshtoken = function () {
+  return JsonWebToken.sign(
+    {
+      id: this._id,
+    },
+    process.env.REFRESH_TOKEN_SECRET,
+    {
+      expiresIn: process.env.REFRESH_TOKEN_EXPIRY,
+    }
+  );
+};
+
+export const User = mongoose.model("User", userSchema);
