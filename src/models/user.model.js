@@ -2,7 +2,9 @@ import mongoose, { Schema } from "mongoose";
 import "dotenv/config";
 
 import bcrypt from "bcrypt";
-import { JsonWebToken } from "jsonwebtoken";
+
+// import { JsonWebToken } from 'jsonwebtoken';
+import jwt from 'jsonwebtoken';
 
 const userSchema = new Schema(
   {
@@ -46,17 +48,17 @@ const userSchema = new Schema(
       required: true,
     },
 
-    watchHistory: {
+    watchHistory: [{
       type: Schema.Types.ObjectId,
       ref: " Video",
-    },
+    }],
     password: {
       type: String,
       required: [true, "Password is required"],
     },
     refreshToken: {
       type: String,
-      required: true,
+      // required: true,
     },
   },
   { timestamps: true }
@@ -64,7 +66,7 @@ const userSchema = new Schema(
 
 userSchema.pre("save", async function (next) {
   if (!this.isModified("password")) return next();
-  this.password = bcrypt.hash(this.password, 10);
+  this.password = await bcrypt.hash(this.password, 10);
   next();
 });
 
@@ -73,7 +75,7 @@ userSchema.methods.isPasswordCorrect = async function (password) {
 };
 
 userSchema.methods.generateAccestoken = function () {
-  return JsonWebToken.sign(
+  return jwt.sign(
     {
       id: this._id,
       email: this.email,
@@ -88,7 +90,7 @@ userSchema.methods.generateAccestoken = function () {
   );
 };
 userSchema.methods.generateRefreshtoken = function () {
-  return JsonWebToken.sign(
+  return jwt.sign(
     {
       id: this._id,
     },
