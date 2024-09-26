@@ -180,7 +180,7 @@ const loggedOutUser = asyncHandler(async (req, res) => {
 
 
 
-const generateRefershToken =  asyncHandler (async(req,res) => {
+const   generateRefershToken =  asyncHandler (async(req,res) => {
 const genertedtoken = req.cookie.accesToken || req.body;
 if(!genertedtoken) {
   throw new ApiError(401 ," invalid token");
@@ -225,7 +225,7 @@ try {
   );
 } catch (error) {
 
-  throw new ApiError ( 500 , "Internal server error")
+  throw new ApiError ( 500 , error?.message || "invalid refersh token")
   
 }
 
