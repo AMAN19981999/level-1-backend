@@ -229,7 +229,7 @@ const generateRefershToken = asyncHandler(async (req, res) => {
 const changePassword = asyncHandler(async (req, res) => {
   const { oldPassword, newPassword } = req.body;
 
-  const user = await User.findById(req.user?.id);
+  const user = await User.findById(req.user?._id);
   const isPassCorrect = user.isPasswordCorrect(oldPassword);
   if (!isPassCorrect) {
     throw new ApiError(400, "invalid old password");
@@ -253,7 +253,7 @@ const updateUser = asyncHandler(async (req, res) => {
     throw new ApiError(400, " All fields are required");
   }
   const user = await User.findByIdAndUpdate(
-    req.user?.id,
+    req.user?._id,
 
     {
       $set: { fullname, email },
@@ -281,7 +281,7 @@ const avatarUpdate = asyncHandler(async (req, res) => {
     throw new ApiError(400, " url is missing for avatar");
   }
   const user = await User.findByIdAndUpdate(
-    req.user?.id,
+    req.user?._id,
     {
       $set: {
         avatar: avatar.url,
@@ -309,7 +309,7 @@ const coverUpdate = asyncHandler(async (req, res) => {
     throw new ApiError(400, " url is missing for avatar");
   }
   const user = await User.findByIdAndUpdate(
-    req.user?.id,
+    req.user?._id,
     {
       $set: {
         coverImages: coverImages.url,
