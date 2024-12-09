@@ -8,6 +8,8 @@ import { apiResponse } from "../utils/ApiResponse.js";
 import cookieParser from "cookie-parser";
 import jwt from "jsonwebtoken";
 
+// import { mongooseAggregatePaginate } from 'mongoose-aggregate-paginate-v2';
+
 const generateRefreshandAccestokens = async (userId) => {
   try {
     const user = await User.findById(userId);
@@ -41,7 +43,7 @@ const registeterUser = asyncHandler(async (req, res) => {
 
   const existedUser = await User.findOne({ $or: [{ email }, { username }] });
 
-  console.log("addddddddddd", existedUser);
+  // console.log("addddddddddd", existedUser);
 
   if (existedUser) {
     throw new ApiError(409, "User already existed");
@@ -324,6 +326,85 @@ const coverUpdate = asyncHandler(async (req, res) => {
     .status(200)
     .json(new apiResponse(200, user, "Update avatar success"));
 });
+
+
+
+const getuserchannelProfile = asyncHandler ( async ( req, res) => {
+  const { username } = req.params;
+  if(!username?.trim()){
+    throw new ApiError(400, " usr not found")
+  }
+  const channel = User.find.aggregate ([
+    {
+     $match : {
+      username:username.toLowerCase()
+     }}, 
+     {
+      $lookup : {
+        from :"subscriptions" ,
+        localField:"_id" ,
+        foreignField:"channel",
+        as:"subscribers"
+       }
+     },
+   
+     {
+      $lookup : {
+        from :"subscriptions" ,
+        localField:"_id" ,
+        foreignField:"subscriber",
+        as:"subscriberTo"
+       }
+
+     }, 
+     {
+      $addFields : {
+        subscriberCount : {
+
+          $size : "$subscribers"
+        } ,
+        channelcount : {
+          $size : "$subscriberTo"
+
+        }
+      }
+     },
+     {
+      $project : {
+        fullname:1,
+        email:1,
+        username:1,
+        subscribercount:1,
+        channelcount:1,
+        avatar:1,
+        coverImages:1
+        
+      }
+     }
+    
+  ])
+  console.log("getuserchannelProfile",channel);
+
+  if (!channel?.length) {
+    throw new ApiError(404 , " not found");
+    
+
+    
+  } 
+
+  return res.status(200).json(new apiResponse(200,channel[0], "User fetched"))
+
+   
+});
+
+
+
+
+
+
+
+
+
 export {
   registeterUser,
   loginUser,
@@ -334,4 +415,5 @@ export {
   updateUser,
   avatarUpdate,
   coverUpdate,
+  getuserchannelProfile
 };

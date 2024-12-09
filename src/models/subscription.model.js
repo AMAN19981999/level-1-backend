@@ -18,5 +18,9 @@ const subscriptonSchema = new Schema(
     timestamps: true,
   }
 );
+const aggeration = () => {
+  
+}
+
 
 export const Subscription = mongoose.model("Subscription", subscriptonSchema);
